@@ -1,0 +1,11 @@
+# Local only, never part of the repository:
+# - dist/   build output of bin/build.php (release ZIPs are attached to GitHub releases instead)
+# - local/  internal material such as security review reports
+dist/
+local/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

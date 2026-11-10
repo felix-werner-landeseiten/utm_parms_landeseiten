@@ -1,0 +1,32 @@
+# Builds the plugin ZIP and publishes a GitHub release when a version tag is pushed.
+# Usage: bump the version, commit, then `git tag v1.1.0 && git push origin v1.1.0`.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # PHP (with zip) is preinstalled on GitHub's Ubuntu runners, so no third-party action is needed.
+      - name: Lint PHP
+        run: find utm-parameter-forwarder -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Build ZIP (also checks that tag and plugin version match)
+        run: php bin/build.php "${GITHUB_REF_NAME#v}"
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/utm-parameter-forwarder.zip \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file <(php bin/changelog.php "${GITHUB_REF_NAME#v}")
